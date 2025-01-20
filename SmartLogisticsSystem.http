@@ -1,0 +1,6 @@
+@SmartLogisticsSystem_HostAddress = http://localhost:5115
+
+GET {{SmartLogisticsSystem_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
