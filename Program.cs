@@ -1,19 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using SmartLogisticsSystem.Data;
+using SmartLogisticsSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Configure Swagger for API documentation.
+builder.Services.AddControllers(); // Add MVC controllers
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add DbContext for SmartLogisticsDbContext
+// Configure DbContext for SmartLogisticsDbContext.
 builder.Services.AddDbContext<SmartLogisticsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register HttpClient service for external API calls.
+builder.Services.AddHttpClient();
 
-// Build the app.
+// Register custom services.
+builder.Services.AddTransient<PackageApiService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,30 +28,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Enable HTTPS redirection.
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapControllers(); // Map controller routes
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+// Run the application.
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
